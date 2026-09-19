@@ -12,5 +12,4 @@ public class UserController {
     public String Hi(){
         return "ok";
     }
-    a
 }
