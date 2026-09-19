@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     @GetMapping("/hi")
-    public String Hi(){
+    public String Hi() {
         return "ok";
     }
+    a
 }
