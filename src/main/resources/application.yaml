@@ -1,10 +1,26 @@
 spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/shortlink?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://localhost:3306/gym_management_system?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true&allowMultiQueries=true&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: 1234
+    password: 123456
   application:
     name: GymManagementSystem
 server:
   port: 8080
+
+mybatis-plus:
+  configuration:
+    # 数据库下划线字段自动映射为实体驼峰属性
+    map-underscore-to-camel-case: true
+    # 开发期控制台打印 SQL,方便调试(生产环境去掉)
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    banner: false
+    db-config:
+      # 主键策略:数据库自增(与 DDL 的 AUTO_INCREMENT 配合)
+      id-type: auto
+      # 全局逻辑删除配置(del_flag: 0 未删除 / 1 已删除)
+      logic-delete-field: delFlag
+      logic-delete-value: 1
+      logic-not-delete-value: 0

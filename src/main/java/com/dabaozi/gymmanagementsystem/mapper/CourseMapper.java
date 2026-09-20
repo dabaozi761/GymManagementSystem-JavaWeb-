@@ -1,9 +1,9 @@
 package com.dabaozi.gymmanagementsystem.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.dabaozi.gymmanagementsystem.entity.User;
+import com.dabaozi.gymmanagementsystem.entity.Course;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface UserMapper extends BaseMapper<User> {
+public interface CourseMapper extends BaseMapper<Course> {
 }
