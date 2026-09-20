@@ -26,7 +26,7 @@ CREATE TABLE `admin` (
     `username`    VARCHAR(50) unique  NOT NULL COMMENT '管理员用户名(唯一)',
     `password`    VARCHAR(100) NOT NULL COMMENT '密码(加密存储)',
     `name`        VARCHAR(50)  NOT NULL COMMENT '姓名',
-    `phone`       VARCHAR(20)  DEFAULT NULL COMMENT '手机号(可空)',
+    `phone`       VARCHAR(20) unique  DEFAULT NULL COMMENT '手机号(可空)',
     `status`      TINYINT      NOT NULL DEFAULT 1 COMMENT '状态:1 正常 0 禁用',
     `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
