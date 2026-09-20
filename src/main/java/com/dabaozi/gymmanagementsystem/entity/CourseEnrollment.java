@@ -2,10 +2,7 @@ package com.dabaozi.gymmanagementsystem.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.dabaozi.gymmanagementsystem.common.database.BaseDO;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDate;
@@ -16,8 +13,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-@Accessors(chain = true)
+@Builder
 @TableName("course_enrollment")
 public class CourseEnrollment extends BaseDO {
 
