@@ -89,6 +89,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!--引入knife4j-->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+            <version>4.4.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
