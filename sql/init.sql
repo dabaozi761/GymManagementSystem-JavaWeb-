@@ -39,9 +39,9 @@ CREATE TABLE `admin` (
 -- ========== 2. 用户表 ==========
 CREATE TABLE `user` (
     `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `username`    VARCHAR(50)  NOT NULL COMMENT '用户名(唯一)',
+    `username`    VARCHAR(50) unique  NOT NULL COMMENT '用户名(唯一)',
     `password`    VARCHAR(100) NOT NULL COMMENT '密码(加密存储)',
-    `phone`       VARCHAR(20)  DEFAULT NULL COMMENT '手机号(可空)',
+    `phone`       VARCHAR(20) unique  DEFAULT NULL COMMENT '手机号(可空)',
     `nickname`    VARCHAR(50)  DEFAULT NULL COMMENT '昵称',
     `avatar`      VARCHAR(255) DEFAULT NULL COMMENT '头像地址',
     `status`      TINYINT      NOT NULL DEFAULT 1 COMMENT '状态:1 正常 0 禁用',
@@ -49,14 +49,12 @@ CREATE TABLE `user` (
     `update_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `del_flag`    TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '逻辑删除:0 未删除 1 已删除',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_username` (`username`),
-    UNIQUE KEY `uk_phone` (`phone`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户表';
 
 -- ========== 3. 会员表 ==========
 CREATE TABLE `member` (
     `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `member_id`   VARCHAR(32)  NOT NULL COMMENT '会员编号(业务号,如 M202609200001)',
+    `member_id`   VARCHAR(32) unique  NOT NULL COMMENT '会员编号(业务号,如 M202609200001)',
     `user_id`     BIGINT       DEFAULT NULL COMMENT '关联 user.id(逻辑外键,可空:线下会员可无账号)',
     `name`        VARCHAR(50)  NOT NULL COMMENT '姓名',
     `gender`      TINYINT      DEFAULT NULL COMMENT '性别:1 男 2 女',
@@ -69,7 +67,6 @@ CREATE TABLE `member` (
     `update_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `del_flag`    TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '逻辑删除:0 未删除 1 已删除',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_member_no` (`member_no`),
     UNIQUE KEY `uk_user_id` (`user_id`),
     KEY `idx_phone` (`phone`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '会员表';
@@ -77,7 +74,7 @@ CREATE TABLE `member` (
 -- ========== 4. 会员卡表 ==========
 CREATE TABLE `membership_card` (
     `id`           BIGINT        NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `card_no`      VARCHAR(32)   NOT NULL COMMENT '卡号(唯一)',
+    `card_no`      VARCHAR(32) unique   NOT NULL COMMENT '卡号(唯一)',
     `member_id`    BIGINT        NOT NULL COMMENT '所属会员 id(逻辑外键 member.id)',
     `card_type`    TINYINT       NOT NULL COMMENT '卡类型:1 月卡 2 季卡 3 年卡 4 次卡 5 储值卡',
     `balance`      DECIMAL(10,2) DEFAULT NULL COMMENT '余额(储值卡使用)',
@@ -90,14 +87,13 @@ CREATE TABLE `membership_card` (
     `update_time`  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `del_flag`     TINYINT(1)    NOT NULL DEFAULT 0 COMMENT '逻辑删除:0 未删除 1 已删除',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_card_no` (`card_no`),
     KEY `idx_member_id` (`member_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '会员卡表';
 
 -- ========== 5. 器材表 ==========
 CREATE TABLE `equipment` (
     `id`             BIGINT        NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `equipment_no`   VARCHAR(32)   NOT NULL COMMENT '器材编号(唯一)',
+    `equipment_no`   VARCHAR(32) unique   NOT NULL COMMENT '器材编号(唯一)',
     `name`           VARCHAR(100)  NOT NULL COMMENT '器材名称(如:跑步机)',
     `type`           TINYINT       NOT NULL COMMENT '类型:1 有氧 2 力量 3 自由重量 4 其他',
     `status`         TINYINT       NOT NULL DEFAULT 1 COMMENT '状态:1 可用 2 维修中 3 报废',
@@ -108,14 +104,13 @@ CREATE TABLE `equipment` (
     `update_time`    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `del_flag`       TINYINT(1)    NOT NULL DEFAULT 0 COMMENT '逻辑删除:0 未删除 1 已删除',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_equipment_no` (`equipment_no`),
     KEY `idx_status` (`status`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '器材表';
 
 -- ========== 6. 课程表 ==========
 CREATE TABLE `course` (
     `id`          BIGINT        NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `course_no`   VARCHAR(32)   NOT NULL COMMENT '课程编号(唯一)',
+    `course_no`   VARCHAR(32) unique   NOT NULL COMMENT '课程编号(唯一)',
     `name`        VARCHAR(100)  NOT NULL COMMENT '课程名称',
     `type`        TINYINT       NOT NULL COMMENT '类型:1 团课 2 私教 3 其他',
     `coach_name`  VARCHAR(50)   DEFAULT NULL COMMENT '教练姓名(未建教练表,暂存姓名)',
@@ -127,7 +122,6 @@ CREATE TABLE `course` (
     `update_time` DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `del_flag`    TINYINT(1)    NOT NULL DEFAULT 0 COMMENT '逻辑删除:0 未删除 1 已删除',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_course_no` (`course_no`),
     KEY `idx_status` (`status`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '课程表';
 
