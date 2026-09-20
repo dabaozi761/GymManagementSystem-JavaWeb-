@@ -1,4 +1,7 @@
 package com.dabaozi.gymmanagementsystem.service;
 
-public interface UserService {
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.dabaozi.gymmanagementsystem.entity.User;
+
+public interface UserService extends IService<User> {
 }
