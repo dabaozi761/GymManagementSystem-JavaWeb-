@@ -56,7 +56,7 @@ CREATE TABLE `user` (
 -- ========== 3. 会员表 ==========
 CREATE TABLE `member` (
     `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `member_no`   VARCHAR(32)  NOT NULL COMMENT '会员编号(业务号,如 M202609200001)',
+    `member_id`   VARCHAR(32)  NOT NULL COMMENT '会员编号(业务号,如 M202609200001)',
     `user_id`     BIGINT       DEFAULT NULL COMMENT '关联 user.id(逻辑外键,可空:线下会员可无账号)',
     `name`        VARCHAR(50)  NOT NULL COMMENT '姓名',
     `gender`      TINYINT      DEFAULT NULL COMMENT '性别:1 男 2 女',
