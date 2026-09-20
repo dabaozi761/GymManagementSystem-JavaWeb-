@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `admin`;
 -- ========== 1. 管理员表 ==========
 CREATE TABLE `admin` (
     `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `username`    VARCHAR(50)  NOT NULL COMMENT '管理员用户名(唯一)',
+    `username`    VARCHAR(50) unique  NOT NULL COMMENT '管理员用户名(唯一)',
     `password`    VARCHAR(100) NOT NULL COMMENT '密码(加密存储)',
     `name`        VARCHAR(50)  NOT NULL COMMENT '姓名',
     `phone`       VARCHAR(20)  DEFAULT NULL COMMENT '手机号(可空)',
