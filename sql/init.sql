@@ -48,14 +48,14 @@ CREATE TABLE `user` (
     `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `del_flag`    TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '逻辑删除:0 未删除 1 已删除',
-    PRIMARY KEY (`id`),
+    PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户表';
 
 -- ========== 3. 会员表 ==========
 CREATE TABLE `member` (
     `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `member_id`   VARCHAR(32) unique  NOT NULL COMMENT '会员编号(业务号,如 M202609200001)',
-    `user_id`     BIGINT       DEFAULT NULL COMMENT '关联 user.id(逻辑外键,可空:线下会员可无账号)',
+    `user_id`     BIGINT unique       DEFAULT NULL COMMENT '关联 user.id(逻辑外键,可空:线下会员可无账号)',
     `name`        VARCHAR(50)  NOT NULL COMMENT '姓名',
     `gender`      TINYINT      DEFAULT NULL COMMENT '性别:1 男 2 女',
     `phone`       VARCHAR(20)  NOT NULL COMMENT '联系电话',
@@ -67,7 +67,6 @@ CREATE TABLE `member` (
     `update_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `del_flag`    TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '逻辑删除:0 未删除 1 已删除',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_user_id` (`user_id`),
     KEY `idx_phone` (`phone`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '会员表';
 
