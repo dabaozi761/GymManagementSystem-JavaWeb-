@@ -20,7 +20,7 @@ public class Member extends BaseDO {
     /**
      * 会员编号(业务号,如 M202609200001)
      */
-    private String memberNo;
+    private String memberId;
 
     /**
      * 关联用户ID(可空:线下会员可无账号)
