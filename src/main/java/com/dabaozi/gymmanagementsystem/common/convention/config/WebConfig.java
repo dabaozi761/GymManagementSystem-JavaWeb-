@@ -20,7 +20,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(tokenInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                        "/login",
+                        "/api/gym-management-system/login/v1/login",
                         "/doc.html",
                         "/webjars/**",
                         "/v3/api-docs/**",

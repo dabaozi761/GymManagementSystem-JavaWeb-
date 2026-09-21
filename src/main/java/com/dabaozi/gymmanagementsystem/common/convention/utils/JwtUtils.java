@@ -3,10 +3,13 @@ package com.dabaozi.gymmanagementsystem.common.convention.utils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.Map;
 
+
+@Component
 public class JwtUtils {
     //健身房管理系统专用秘钥
     private static String signKey = "R3ltTWFuYWdlbWVudFN5c3RlbQ==";
