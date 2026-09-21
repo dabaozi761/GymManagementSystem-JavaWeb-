@@ -2,8 +2,7 @@ package com.dabaozi.gymmanagementsystem.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.dabaozi.gymmanagementsystem.common.database.BaseDO;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
@@ -13,8 +12,9 @@ import java.time.LocalDate;
  * 会员卡实体(月卡/季卡/年卡/次卡/储值卡统一一张表,按 cardType 区分使用哪组字段)
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @TableName("membership_card")
 public class MembershipCard extends BaseDO {
 

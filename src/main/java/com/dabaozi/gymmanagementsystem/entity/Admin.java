@@ -2,16 +2,16 @@ package com.dabaozi.gymmanagementsystem.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.dabaozi.gymmanagementsystem.common.database.BaseDO;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 /**
  * 管理员实体
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @TableName("admin")
 public class Admin extends BaseDO {
 

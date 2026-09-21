@@ -2,8 +2,7 @@ package com.dabaozi.gymmanagementsystem.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.dabaozi.gymmanagementsystem.common.database.BaseDO;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
@@ -12,8 +11,9 @@ import java.math.BigDecimal;
  * 课程实体(精简版:教练用姓名字段暂存,未建教练表)
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @TableName("course")
 public class Course extends BaseDO {
 

@@ -2,8 +2,7 @@ package com.dabaozi.gymmanagementsystem.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.dabaozi.gymmanagementsystem.common.database.BaseDO;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDate;
@@ -12,8 +11,9 @@ import java.time.LocalDate;
  * 训练计划实体(管理员为会员制定)
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @TableName("training_plan")
 public class TrainingPlan extends BaseDO {
 
