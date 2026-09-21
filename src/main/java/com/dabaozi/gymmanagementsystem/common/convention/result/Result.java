@@ -3,14 +3,14 @@ package com.dabaozi.gymmanagementsystem.common.convention.result;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.io.Serial;
+//import java.io.Serial;
 import java.io.Serializable;
 
 @Data
 @Accessors(chain = true)
 public class Result<T> implements Serializable {
 
-    @Serial
+//    @Serial
     private static final long serialVersionUID = 5679018624309023727L;
 
     /**
