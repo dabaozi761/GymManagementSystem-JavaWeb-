@@ -1,7 +1,9 @@
 package com.dabaozi.gymmanagementsystem.controller;
 
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping
 public class AdminController {
 }
