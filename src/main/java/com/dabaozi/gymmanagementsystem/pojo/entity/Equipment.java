@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * 器材实体
@@ -41,7 +42,7 @@ public class Equipment extends BaseDO {
     /**
      * 购入日期
      */
-    private LocalDate purchaseDate;
+    private LocalDateTime purchaseDate;
 
     /**
      * 购入价格
