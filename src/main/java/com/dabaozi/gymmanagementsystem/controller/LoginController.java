@@ -28,7 +28,7 @@ public class LoginController{
      * @return
      */
 
-    @PostMapping("login")
+    @PostMapping("api/gym-management-system/login/v1/login")
     public Result login(@RequestBody LoginDTO loginDTO){
         log.info("登录：{}",loginDTO);
         if(loginDTO.getUsername()==null||loginDTO.getPassword()==null||loginDTO.getRole()==null){
