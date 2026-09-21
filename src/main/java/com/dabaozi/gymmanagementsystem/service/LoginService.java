@@ -1,9 +1,10 @@
 package com.dabaozi.gymmanagementsystem.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.dabaozi.gymmanagementsystem.common.convention.result.Result;
-import com.dabaozi.gymmanagementsystem.dto.LoginDTO;
+import com.dabaozi.gymmanagementsystem.pojo.dto.LoginDTO;
 
-public interface LoginService {
+public interface LoginService extends IService<LoginDTO> {
     /**
      * 登录接口
      * @param loginDTO

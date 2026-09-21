@@ -1,4 +1,4 @@
-package com.dabaozi.gymmanagementsystem.entity;
+package com.dabaozi.gymmanagementsystem.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.dabaozi.gymmanagementsystem.common.database.BaseDO;
@@ -6,17 +6,17 @@ import lombok.*;
 import lombok.experimental.Accessors;
 
 /**
- * 管理员实体
+ * 用户实体
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("admin")
-public class Admin extends BaseDO {
+@TableName("user")
+public class User extends BaseDO {
 
     /**
-     * 管理员用户名(唯一)
+     * 用户名(唯一)
      */
     private String username;
 
@@ -26,14 +26,19 @@ public class Admin extends BaseDO {
     private String password;
 
     /**
-     * 姓名
-     */
-    private String name;
-
-    /**
      * 手机号
      */
     private String phone;
+
+    /**
+     * 昵称
+     */
+    private String nickname;
+
+    /**
+     * 头像地址
+     */
+    private String avatar;
 
     /**
      * 状态:1 正常 0 禁用

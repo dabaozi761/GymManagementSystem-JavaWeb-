@@ -1,4 +1,4 @@
-package com.dabaozi.gymmanagementsystem.entity;
+package com.dabaozi.gymmanagementsystem.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.dabaozi.gymmanagementsystem.common.database.BaseDO;

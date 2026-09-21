@@ -1,4 +1,4 @@
-package com.dabaozi.gymmanagementsystem.vo;
+package com.dabaozi.gymmanagementsystem.pojo.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
