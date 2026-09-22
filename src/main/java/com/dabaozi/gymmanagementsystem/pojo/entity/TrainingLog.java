@@ -3,9 +3,8 @@ package com.dabaozi.gymmanagementsystem.pojo.entity;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.dabaozi.gymmanagementsystem.common.database.BaseDO;
 import lombok.*;
-import lombok.experimental.Accessors;
 
-import java.time.LocalDate;
+import java.util.Date;
 
 /**
  * 训练日志实体(关联训练计划)
@@ -25,7 +24,7 @@ public class TrainingLog extends BaseDO {
     /**
      * 训练日期(数据库默认当天)
      */
-    private LocalDate trainDate;
+    private Date trainDate;
 
     /**
      * 训练时长(分钟)
