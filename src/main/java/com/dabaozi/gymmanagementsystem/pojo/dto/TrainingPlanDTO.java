@@ -1,20 +1,13 @@
-package com.dabaozi.gymmanagementsystem.pojo.entity;
+package com.dabaozi.gymmanagementsystem.pojo.dto;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.dabaozi.gymmanagementsystem.common.database.BaseDO;
-import lombok.*;
+import lombok.Data;
 
 import java.util.Date;
 
-/**
- * 训练计划实体(管理员为会员制定)
- */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@TableName("training_plan")
-public class TrainingPlan extends BaseDO {
+public class TrainingPlanDTO {
+
+    private Long id;
 
     /**
      * 会员ID
