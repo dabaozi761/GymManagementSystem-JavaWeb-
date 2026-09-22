@@ -1,11 +1,13 @@
 package com.dabaozi.gymmanagementsystem.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.dabaozi.gymmanagementsystem.common.convention.result.Result;
 import com.dabaozi.gymmanagementsystem.common.convention.result.Results;
 import com.dabaozi.gymmanagementsystem.pojo.dto.EquipmentDTO;
+import com.dabaozi.gymmanagementsystem.pojo.dto.EquipmentPageReqDTO;
 import com.dabaozi.gymmanagementsystem.pojo.dto.EquipmentSaveDTO;
+import com.dabaozi.gymmanagementsystem.pojo.vo.EquipmentPageRespDTO;
 import com.dabaozi.gymmanagementsystem.service.EquipmentService;
-import com.dabaozi.gymmanagementsystem.service.impl.EquipmentServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,5 +34,10 @@ public class EquipmentController {
     public Result<Void>update(@RequestBody EquipmentDTO equipmentDTO){
         equipmentService.updateEquipment(equipmentDTO);
         return Results.success();
+    }
+
+    @PostMapping("api/gym-management-system/equipment/v1/page")
+    public Result<IPage<EquipmentPageRespDTO>>page(@RequestBody EquipmentPageReqDTO equipmentPageReqDTO){
+        return Results.success(equipmentService.pageEquipment(equipmentPageReqDTO));
     }
 }
