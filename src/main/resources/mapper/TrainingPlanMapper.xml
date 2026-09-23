@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dabaozi.gymmanagementsystem.mapper.TrainingPlanMapper">
+
+    <select id="pageTrainingPlan" resultType="com.dabaozi.gymmanagementsystem.pojo.entity.TrainingPlan">
+        SELECT id,
+               member_id,
+               admin_id,
+               title,
+               goal,
+               content,
+               start_date,
+               end_date,
+               status,
+               remark,
+               create_time,
+               update_time,
+               del_flag
+        FROM training_plan
+        WHERE del_flag = 0
+        <if test="memberId != null">
+            AND member_id = #{memberId}
+        </if>
+        <if test="adminId != null">
+            AND admin_id = #{adminId}
+        </if>
+        <if test="title != null and title != ''">
+            AND title LIKE CONCAT('%', #{title}, '%')
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+</mapper>
