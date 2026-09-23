@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dabaozi.gymmanagementsystem.mapper.TrainingLogMapper">
+
+    <select id="pageTrainingLog" resultType="com.dabaozi.gymmanagementsystem.pojo.entity.TrainingLog">
+        SELECT id,
+               training_plan_id,
+               train_date,
+               duration_minutes,
+               content,
+               feeling,
+               remark,
+               create_time,
+               update_time,
+               del_flag
+        FROM training_log
+        WHERE del_flag = 0
+        <if test="trainingPlanId != null">
+            AND training_plan_id = #{trainingPlanId}
+        </if>
+        <if test="trainDate != null">
+            AND train_date = #{trainDate}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+</mapper>
