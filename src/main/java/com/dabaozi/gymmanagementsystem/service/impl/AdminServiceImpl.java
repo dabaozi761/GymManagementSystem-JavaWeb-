@@ -30,7 +30,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         }
         Admin admin = Admin.builder()
                 .username(adminSaveDTO.getUsername())
-                .password(DigestUtils.md5DigestAsHex(adminSaveDTO.getPassword().getBytes()))
+                .password(DigestUtils.md5DigestAsHex(adminSaveDTO.getPassword().getBytes()))//md5加密
                 .name(adminSaveDTO.getName())
                 .phone(adminSaveDTO.getPhone())
                 .status(1)

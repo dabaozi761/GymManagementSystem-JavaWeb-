@@ -13,6 +13,6 @@ public interface MemberMapper extends BaseMapper<Member> {
      * @param id
      * @return
      */
-    @Select("select * from member where user_id=#{id}")
+    @Select("select * from member where user_id=#{id} and del_flag=0")
     Member selectByUserId(Long id);
 }
