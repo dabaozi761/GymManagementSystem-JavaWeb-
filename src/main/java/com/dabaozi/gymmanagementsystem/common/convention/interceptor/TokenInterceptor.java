@@ -41,10 +41,34 @@ public class TokenInterceptor implements HandlerInterceptor {
         }
 //        6.角色校验:管理员模块接口(路径含 /admin/)要求 role=1,否则 403
         String uri = httpServletRequest.getRequestURI();
+        String role = String.valueOf(claims.get("role"));
         if (uri.contains("/admin/")) {
-            String role = String.valueOf(claims.get("role"));
             if (!"1".equals(role)) {
                 log.info("非管理员访问管理端接口，返回 403");
+                httpServletResponse.setStatus(403);
+                return false;
+            }
+        }
+//        7.课程模块角色校验:写接口(save/update/updateStatus/delete)仅管理员,详情和分页登录即可
+        if (uri.contains("/course/") && !uri.contains("/courseEnrollment/")) {
+            if (uri.endsWith("/save") || uri.endsWith("/update")
+                    || uri.endsWith("/updateStatus") || uri.endsWith("/delete")) {
+                if (!"1".equals(role)) {
+                    log.info("非管理员操作课程写接口，返回 403");
+                    httpServletResponse.setStatus(403);
+                    return false;
+                }
+            }
+        }
+//        8.课程报名模块角色校验:报名仅会员/普通用户,updateStatus 仅管理员;取消、详情、分页登录即可(数据归属在 service 层校验)
+        if (uri.contains("/courseEnrollment/")) {
+            if (uri.endsWith("/updateStatus") && !"1".equals(role)) {
+                log.info("非管理员操作报名状态接口，返回 403");
+                httpServletResponse.setStatus(403);
+                return false;
+            }
+            if (uri.endsWith("/enroll") && !"2".equals(role) && !"3".equals(role)) {
+                log.info("非会员/用户报名课程，返回 403");
                 httpServletResponse.setStatus(403);
                 return false;
             }

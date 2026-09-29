@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- *会员编号与会员卡编号自动生成.
+ * 会员编号、会员卡编号与课程编号自动生成.
  */
 public final class BusinessNoGenerator {
 
@@ -21,6 +21,10 @@ public final class BusinessNoGenerator {
 
     public static String nextCardNo() {
         return next("C");
+    }
+
+    public static String nextCourseNo() {
+        return next("K");
     }
 
     private static String next(String prefix) {

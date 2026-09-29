@@ -1,5 +1,6 @@
 package com.dabaozi.gymmanagementsystem.pojo.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.dabaozi.gymmanagementsystem.common.database.BaseDO;
 import lombok.*;
@@ -19,7 +20,9 @@ public class Member extends BaseDO {
 
     /**
      * 会员编号(业务号,如 M202609200001)
+     * 数据库列名为 member_no
      */
+    @TableField("member_no")
     private String memberId;
 
     /**

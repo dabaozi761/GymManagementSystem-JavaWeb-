@@ -15,7 +15,7 @@ import org.apache.ibatis.annotations.Delete;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/gym-management-system/membershipCard/vi")
+@RequestMapping("api/gym-management-system/membershipCard/v1")
 @Slf4j
 @RequiredArgsConstructor
 
