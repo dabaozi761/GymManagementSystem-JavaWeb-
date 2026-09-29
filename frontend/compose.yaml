@@ -1,0 +1,10 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8088:80"
+    environment:
+      BACKEND_ORIGIN: ${BACKEND_ORIGIN:-http://host.docker.internal:8080}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

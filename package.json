@@ -1,0 +1,8 @@
+{
+  "name": "gym-management-system",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix frontend ci --offline=false && npm --prefix frontend run build",
+    "dev": "npm --prefix frontend run dev"
+  }
+}
