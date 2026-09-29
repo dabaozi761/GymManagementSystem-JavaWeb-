@@ -50,7 +50,7 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
     @Override
     public String savaCard(MembershipCardSaveDTO membershipCardSaveDTO) {
         Member member = requireMember(membershipCardSaveDTO.getMemberId());
-        if (!Integer.valueOf(1).equals(membershipCardSaveDTO.getStatus())) {
+        if (!Integer.valueOf(1).equals(member.getStatus())) {
             throw new ClientException("退会会员不能办理会员卡");
         }
         //构建membershipCard对象
@@ -162,7 +162,7 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
                     .eq(MembershipCard::getId,dto.getId())
                     .eq(MembershipCard::getStatus,NORMAL_STATUS)
                     .ge(MembershipCard::getRemainCount,dto.getCount())
-                    .setSql("remain_count=remain_count-"+dto.getAmount()));
+                    .setSql("remain_count=remain_count-"+dto.getCount()));
             if(rows==0){
                 throw new ClientException("会员卡剩余次数不够");
             }
