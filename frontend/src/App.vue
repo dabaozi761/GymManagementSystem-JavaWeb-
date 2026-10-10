@@ -5,7 +5,7 @@ import AppIcon from './components/AppIcon.vue'
 import { isAdmin, notify, setSession, state } from './state'
 import { navigation } from './resources'
 const route = useRoute(), router = useRouter(), menuOpen = ref(false)
-const nav = computed(() => isAdmin.value ? navigation : [{ label: '会员服务', items: [{ key: 'course', title: '发现课程', icon: 'calendar' }, { key: 'courseEnrollment', title: '我的报名', icon: 'clipboard' }, { key: 'profile', title: '个人资料', icon: 'user' }] }])
+const nav = computed(() => isAdmin.value ? navigation : [{ label: '会员服务', items: [{ key: 'course', title: '发现课程', icon: 'calendar' }, { key: 'courseEnrollment', title: '我的报名', icon: 'clipboard' }, { key: 'member/trainingPlan', title: '我的训练计划', icon: 'target' }, { key: 'member/trainingRecord', title: '我的训练记录', icon: 'activity' }, { key: 'member/equipment', title: '器材查看', icon: 'dumbbell' }, { key: 'profile', title: '个人资料', icon: 'user' }] }])
 const name = computed(() => state.session?.name || state.session?.username || '你好')
 const roleName = computed(() => isAdmin.value ? '管理员' : state.session?.role === 3 ? '会员' : '普通用户')
 function logout() { setSession(null); void router.replace('/login') }

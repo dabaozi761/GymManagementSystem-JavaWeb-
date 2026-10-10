@@ -13,5 +13,10 @@ public class TrainingLogPageReqDTO extends Page<TrainingLog> {
 
     private Long trainingPlanId;
 
+    /**
+     * 会员id(非管理员强制按本人过滤,经训练计划关联)
+     */
+    private Long memberId;
+
     private Date trainDate;
 }

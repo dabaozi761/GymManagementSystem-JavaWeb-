@@ -8,11 +8,11 @@ import com.dabaozi.gymmanagementsystem.pojo.entity.TrainingPlan;
 import com.dabaozi.gymmanagementsystem.pojo.vo.TrainingPlanPageRespDTO;
 
 public interface TrainingPlanService extends IService<TrainingPlan> {
-    void save(TrainingPlanDTO trainingPlanDTO);
+    void save(TrainingPlanDTO trainingPlanDTO, Long loginId, Integer role);
 
-    void deleteWithId(Long id);
+    void deleteWithId(Long id, Long loginId, Integer role);
 
-    void updateTrainingPlan(TrainingPlanDTO trainingPlanDTO);
+    void updateTrainingPlan(TrainingPlanDTO trainingPlanDTO, Long loginId, Integer role);
 
-    IPage<TrainingPlanPageRespDTO> pageTrainingPlan(TrainingPlanPageReqDTO trainingPlanPageReqDTO);
+    IPage<TrainingPlanPageRespDTO> pageTrainingPlan(TrainingPlanPageReqDTO trainingPlanPageReqDTO, Long loginId, Integer role);
 }

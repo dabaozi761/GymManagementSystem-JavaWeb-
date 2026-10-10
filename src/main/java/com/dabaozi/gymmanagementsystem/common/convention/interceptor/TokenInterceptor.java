@@ -60,7 +60,17 @@ public class TokenInterceptor implements HandlerInterceptor {
                 }
             }
         }
-//        8.课程报名模块角色校验:报名仅会员/普通用户,updateStatus 仅管理员;取消、详情、分页登录即可(数据归属在 service 层校验)
+//        8.器材模块角色校验:写接口(save/update/delete)仅管理员,分页登录即可(会员侧只读查看)
+        if (uri.contains("/equipment/")) {
+            if (uri.endsWith("/save") || uri.endsWith("/update") || uri.endsWith("/delete")) {
+                if (!"1".equals(role)) {
+                    log.info("非管理员操作器材写接口，返回 403");
+                    httpServletResponse.setStatus(403);
+                    return false;
+                }
+            }
+        }
+//        9.课程报名模块角色校验:报名仅会员/普通用户,updateStatus 仅管理员;取消、详情、分页登录即可(数据归属在 service 层校验)
         if (uri.contains("/courseEnrollment/")) {
             if (uri.endsWith("/updateStatus") && !"1".equals(role)) {
                 log.info("非管理员操作报名状态接口，返回 403");

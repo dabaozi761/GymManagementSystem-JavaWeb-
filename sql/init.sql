@@ -142,7 +142,7 @@ CREATE TABLE `course_enrollment` (
 CREATE TABLE `training_plan` (
     `id`          BIGINT       NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `member_id`   BIGINT       NOT NULL COMMENT '会员 id(逻辑外键 member.id)',
-    `admin_id`    BIGINT       NOT NULL COMMENT '制定计划的管理员 id(逻辑外键 admin.id)',
+    `admin_id`    BIGINT       DEFAULT NULL COMMENT '制定计划的管理员 id(逻辑外键 admin.id;会员自建计划时为空)',
     `title`       VARCHAR(100) NOT NULL COMMENT '计划名称',
     `goal`        VARCHAR(50)  DEFAULT NULL COMMENT '训练目标(如:减脂/增肌/塑形)',
     `content`     TEXT         DEFAULT NULL COMMENT '计划内容描述',

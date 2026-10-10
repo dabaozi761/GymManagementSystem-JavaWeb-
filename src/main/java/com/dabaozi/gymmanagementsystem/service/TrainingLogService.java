@@ -9,11 +9,11 @@ import com.dabaozi.gymmanagementsystem.pojo.vo.TrainingLogPageRespDTO;
 
 
 public interface TrainingLogService extends IService<TrainingLog> {
-    void save(TrainingLogDTO trainingLogDTO);
+    void save(TrainingLogDTO trainingLogDTO, Long loginId, Integer role);
 
-    void deleteWithId(Long id);
+    void deleteWithId(Long id, Long loginId, Integer role);
 
-    void updateTrainingLog(TrainingLogDTO trainingLogDTO);
+    void updateTrainingLog(TrainingLogDTO trainingLogDTO, Long loginId, Integer role);
 
-    IPage<TrainingLogPageRespDTO> pageTrainingLog(TrainingLogPageReqDTO trainingLogPageReqDTO);
+    IPage<TrainingLogPageRespDTO> pageTrainingLog(TrainingLogPageReqDTO trainingLogPageReqDTO, Long loginId, Integer role);
 }

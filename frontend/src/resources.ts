@@ -72,6 +72,27 @@ export const resources: Record<string, Resource> = {
     columns: [{ key: 'name', label: '管理员姓名', type: 'person' }, { key: 'username', label: '登录账号' }, { key: 'phone', label: '联系电话' }, { key: 'createTime', label: '创建时间', type: 'datetime' }, { key: 'status', label: '状态', type: 'badge', options: normal }],
     fields: [...accountFields, nameField, phoneField, { key: 'password', label: '新密码', type: 'password', editOnly: true, hint: '留空则不修改密码。', maxLength: 72 }],
   },
+  memberTrainingPlan: {
+    key: 'memberTrainingPlan', api: 'trainingPlan', path: '/member/trainingPlan', adminOnly: false, memberWrite: true,
+    title: '我的训练计划', singular: '训练计划', icon: 'target', subtitle: '把目标变成计划，把计划变成进步。', searchKey: 'title', searchPlaceholder: '搜索计划名称',
+    filters: [statusField(planStatus)],
+    columns: [{ key: 'title', label: '计划名称', type: 'person' }, { key: 'goal', label: '训练目标' }, { key: 'startDate', label: '开始日期', type: 'date' }, { key: 'endDate', label: '结束日期', type: 'date' }, { key: 'status', label: '计划状态', type: 'badge', options: planStatus }],
+    fields: [{ key: 'title', label: '计划名称', required: true, maxLength: 100 }, { key: 'goal', label: '训练目标', maxLength: 50, placeholder: '例如：提升体能、增肌、减脂' }, { key: 'startDate', label: '开始日期', type: 'date' }, { key: 'endDate', label: '结束日期', type: 'date' }, { key: 'content', label: '计划内容', type: 'textarea', maxLength: 10000 }, remark],
+  },
+  memberTrainingRecord: {
+    key: 'memberTrainingRecord', api: 'trainingLog', path: '/member/trainingRecord', adminOnly: false, memberCreateOnly: true,
+    title: '我的训练记录', singular: '训练记录', icon: 'activity', subtitle: '记录每一滴汗水，见证每一点改变。',
+    filters: [{ key: 'trainDate', label: '训练日期', type: 'date' }],
+    columns: [{ key: 'trainDate', label: '训练日期', type: 'date' }, { key: 'planTitle', label: '训练计划' }, { key: 'durationMinutes', label: '时长（分钟）' }, { key: 'content', label: '训练内容' }, { key: 'feeling', label: '身体感受' }],
+    fields: [relation('trainingPlanId', '训练计划', 'trainingPlan', 'title', 'title'), { key: 'trainDate', label: '训练日期', type: 'date', required: true }, { key: 'durationMinutes', label: '训练时长（分钟）', type: 'number', min: 1, max: 1440 }, { key: 'feeling', label: '身体感受', maxLength: 255 }, { key: 'content', label: '训练内容', type: 'textarea', required: true, maxLength: 10000 }, remark],
+  },
+  memberEquipment: {
+    key: 'memberEquipment', api: 'equipment', path: '/member/equipment', adminOnly: false, readOnly: true,
+    title: '器材查看', singular: '器材', icon: 'dumbbell', subtitle: '了解场馆器材，为训练做好准备。',
+    filters: [{ key: 'type', label: '器材类型', type: 'select', options: equipmentTypes }, statusField(equipmentStatus)],
+    columns: [{ key: 'name', label: '器材名称', type: 'person' }, { key: 'equipmentNo', label: '器材编号' }, { key: 'type', label: '类型', options: equipmentTypes }, { key: 'status', label: '器材状态', type: 'badge', options: equipmentStatus }],
+    fields: [],
+  },
 }
 
 export const navigation = [

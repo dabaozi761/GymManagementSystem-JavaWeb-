@@ -14,4 +14,14 @@ export interface Resource {
   searchKey?: string; searchPlaceholder?: string; filters: Field[]; columns: Column[]; fields: Field[];
   statuses?: Option[]; statusAction?: boolean; detail?: boolean; createAction?: string; readOnly?: boolean;
   defaultFilters?: Row;
+  /** 后端接口资源名(默认与 key 相同,会员自助区页面用) */
+  api?: string;
+  /** 路由路径(默认 /key,会员自助区页面用) */
+  path?: string;
+  /** 是否仅管理员可见(默认除 course/courseEnrollment 外都是) */
+  adminOnly?: boolean;
+  /** 会员可增删改(非管理员) */
+  memberWrite?: boolean;
+  /** 会员仅可新增(非管理员) */
+  memberCreateOnly?: boolean;
 }

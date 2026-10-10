@@ -18,6 +18,11 @@ public class TrainingLogPageRespDTO {
 
     private Long trainingPlanId;
 
+    /**
+     * 训练计划名称(查询后补全,便于会员侧展示)
+     */
+    private String planTitle;
+
     private Date trainDate;
 
     private Integer durationMinutes;
