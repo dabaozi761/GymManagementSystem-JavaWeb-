@@ -30,6 +30,9 @@ public class UserController {
         if (userRegisterDTO.getUsername() == null || userRegisterDTO.getPassword() == null) {
             return Results.failure("401", "用户名、密码不能为空");
         }
+        if (userRegisterDTO.getPassword().length() < 6) {
+            return Results.failure("402", "密码不得低于6位");
+        }
         userService.register(userRegisterDTO);
         return Results.success();
     }
