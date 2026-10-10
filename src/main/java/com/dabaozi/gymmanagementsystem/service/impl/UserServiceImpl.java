@@ -28,6 +28,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (baseMapper.selectByUsername(userRegisterDTO.getUsername()) != null) {
             throw new ClientException("用户名已存在");
         }
+        //TODO userRegisterDTO.getPassword().length()>6
         User user = User.builder()
                 .username(userRegisterDTO.getUsername())
                 .password(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()))

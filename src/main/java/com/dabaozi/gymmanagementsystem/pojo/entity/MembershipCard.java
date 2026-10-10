@@ -29,12 +29,12 @@ public class MembershipCard extends BaseDO {
     private Long memberId;
 
     /**
-     * 卡类型:1 月卡 2 季卡 3 年卡 4 次卡 5 储值卡
+     * 卡类型:1 月卡 2 季卡 3 年卡 4 次卡
      */
     private Integer cardType;
 
     /**
-     * 余额(储值卡使用)
+     * 余额
      */
     private BigDecimal balance;
 

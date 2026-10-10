@@ -42,7 +42,7 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
     private static final int QUARTER_CARD = 2;
     private static final int YEAR_CARD = 3;
     private static final int COUNT_CARD = 4;
-    private static final int STORED_VALUE_CARD = 5;
+//    private static final int STORED_VALUE_CARD = 5;
     private static final int NORMAL_STATUS = 1;
 
     private final MemberMapper memberMapper;
@@ -119,9 +119,10 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
         //判断充值的余额>0
         requirePositive(dto.getAmount(), "充值余额");
         MembershipCard card = requireUsableCard(dto.getId());//确保这个会员卡不过期
-        if (!Integer.valueOf(STORED_VALUE_CARD).equals(card.getCardType())) {
-            throw new ClientException("只有储值卡支持充值");
-        }
+//        if (!Integer.valueOf(STORED_VALUE_CARD).equals(card.getCardType())) {
+//            throw new ClientException("只有储值卡支持充值");
+//        }
+        //给全部卡都可以使用
         int rows = baseMapper.update(null, Wrappers.lambdaUpdate(MembershipCard.class)
                 .eq(MembershipCard::getId, dto.getId())
                 .eq(MembershipCard::getStatus,NORMAL_STATUS)
@@ -141,7 +142,7 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
         }
         MembershipCard card=requireUsableCard(dto.getId());
         int rows=0;//判断有无更新
-        if(Integer.valueOf(STORED_VALUE_CARD).equals(card.getCardType())){
+//        全部会员卡都可以使用
             requirePositive(dto.getAmount(),"消费金额");
             rows=baseMapper.update(null, Wrappers.lambdaUpdate(MembershipCard.class)
                     .eq(MembershipCard::getId, dto.getId())
@@ -152,7 +153,7 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
                 throw new ClientException("会员卡余额不足");
             }
 
-        }
+
         else if(Integer.valueOf(COUNT_CARD).equals(card.getCardType())){
 
             if(dto.getCount()==null||dto.getCount()<=0){
@@ -274,7 +275,7 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
 
     private void normalizeAndValidate(MembershipCard card) {
         Integer type = card.getCardType();
-        if (type == null || type < MONTH_CARD || type > STORED_VALUE_CARD) {
+        if (type == null || type < MONTH_CARD || type > COUNT_CARD) {
             throw new ClientException("会员卡类型只能是1至5");
         }
         if (card.getStatus() == null || card.getStatus() < 1 || card.getStatus() > 4) {
