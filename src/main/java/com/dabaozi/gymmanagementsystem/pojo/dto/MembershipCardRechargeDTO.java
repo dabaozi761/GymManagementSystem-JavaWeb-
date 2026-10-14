@@ -15,4 +15,5 @@ import java.math.BigDecimal;
 public class MembershipCardRechargeDTO {
     private Long id;
     private BigDecimal amount;
+    private String remark;
 }

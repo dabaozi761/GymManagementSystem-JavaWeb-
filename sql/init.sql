@@ -10,6 +10,9 @@ CREATE DATABASE IF NOT EXISTS `gym_management_system`
 
 USE `gym_management_system`;
 
+DROP TABLE IF EXISTS `card_transaction`;
+DROP TABLE IF EXISTS `shop_order`;
+DROP TABLE IF EXISTS `shop_product`;
 DROP TABLE IF EXISTS `course_enrollment`;
 DROP TABLE IF EXISTS `training_log`;
 DROP TABLE IF EXISTS `training_plan`;
@@ -73,8 +76,8 @@ CREATE TABLE `membership_card` (
     `id`           BIGINT        NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `card_no`      VARCHAR(32) unique   NOT NULL COMMENT '卡号(唯一)',
     `member_id`    BIGINT        NOT NULL COMMENT '所属会员 id(逻辑外键 member.id)',
-    `card_type`    TINYINT       NOT NULL COMMENT '卡类型:1 月卡 2 季卡 3 年卡 4 次卡 5 储值卡',
-    `balance`      DECIMAL(10,2) DEFAULT NULL COMMENT '余额(储值卡使用)',
+    `card_type`    TINYINT       NOT NULL COMMENT '卡类型:1 月卡 2 季卡 3 年卡 4 次卡',
+    `balance`      DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '会员卡余额，全部卡类型可用',
     `total_count`  INT           DEFAULT NULL COMMENT '总次数(次卡使用)',
     `remain_count` INT           DEFAULT NULL COMMENT '剩余次数(次卡使用)',
     `start_date`   DATE          DEFAULT NULL COMMENT '有效期开始(月/季/年卡使用)',
@@ -173,3 +176,79 @@ CREATE TABLE `training_log` (
     PRIMARY KEY (`id`),
     KEY `idx_training_plan_id` (`training_plan_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '训练日志表';
+
+-- ========== 10. 余额流水与购物系统 ==========
+CREATE TABLE IF NOT EXISTS card_transaction (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    transaction_no VARCHAR(40) NOT NULL UNIQUE,
+    card_id BIGINT NOT NULL,
+    card_no VARCHAR(32) NOT NULL,
+    member_id BIGINT NOT NULL,
+    member_name VARCHAR(50) NOT NULL,
+    type TINYINT NOT NULL COMMENT '1充值 2余额消费 3次数核销',
+    amount DECIMAL(10,2) NOT NULL,
+    balance_before DECIMAL(10,2) NOT NULL,
+    balance_after DECIMAL(10,2) NOT NULL,
+    count INT DEFAULT NULL,
+    remain_count_before INT DEFAULT NULL,
+    remain_count_after INT DEFAULT NULL,
+    order_id BIGINT DEFAULT NULL,
+    operator_id BIGINT DEFAULT NULL,
+    operator_role TINYINT DEFAULT NULL,
+    remark VARCHAR(255) DEFAULT NULL,
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    del_flag TINYINT NOT NULL DEFAULT 0,
+    KEY idx_member_type_time (member_id, type, create_time),
+    KEY idx_card_time (card_id, create_time),
+    KEY idx_order (order_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS shop_product (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    category TINYINT NOT NULL COMMENT '1储物柜 2充电宝 3饮料 4蛋白粉 5运动周边',
+    price DECIMAL(10,2) NOT NULL COMMENT '普通商品元/件，租用品元/件/天',
+    stock INT NOT NULL DEFAULT 0 COMMENT '可售/可租库存，不含在租数量',
+    status TINYINT NOT NULL DEFAULT 1 COMMENT '1上架 0下架',
+    remark VARCHAR(255) DEFAULT NULL,
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    del_flag TINYINT NOT NULL DEFAULT 0,
+    KEY idx_status_category (status, category)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS shop_order (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    order_no VARCHAR(40) NOT NULL UNIQUE,
+    request_no VARCHAR(64) NOT NULL UNIQUE COMMENT '重复提交去重标识',
+    member_id BIGINT NOT NULL,
+    member_name VARCHAR(50) NOT NULL,
+    card_id BIGINT NOT NULL,
+    card_no VARCHAR(32) NOT NULL,
+    product_id BIGINT NOT NULL,
+    product_name VARCHAR(100) NOT NULL,
+    category TINYINT NOT NULL,
+    unit_price DECIMAL(10,2) NOT NULL,
+    quantity INT NOT NULL,
+    rental_days INT NOT NULL DEFAULT 0,
+    amount DECIMAL(10,2) NOT NULL,
+    status TINYINT NOT NULL COMMENT '1购买完成 2租用中 3已归还',
+    due_time DATETIME DEFAULT NULL,
+    return_time DATETIME DEFAULT NULL,
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    del_flag TINYINT NOT NULL DEFAULT 0,
+    KEY idx_member_time (member_id, create_time),
+    KEY idx_product_status (product_id, status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 以下为示例商品，仅在商品表为空时添加，价格可在管理页面修改。
+INSERT INTO shop_product (name, category, price, stock, remark)
+SELECT name, category, price, stock, remark FROM (
+    SELECT '储物柜租用' name, 1 category, 5.00 price, 30 stock, '按件/天预付，归还后释放库存' remark
+    UNION ALL SELECT '充电宝租用', 2, 3.00, 10, '按件/天预付，前台确认归还'
+    UNION ALL SELECT '运动饮料', 3, 8.00, 50, '每瓶'
+    UNION ALL SELECT '乳清蛋白粉', 4, 199.00, 20, '每罐'
+    UNION ALL SELECT '运动毛巾', 5, 25.00, 30, '每条'
+) seed WHERE NOT EXISTS (SELECT 1 FROM shop_product);

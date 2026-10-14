@@ -16,4 +16,5 @@ public class MembershipCardConsumeDTO {
     private Long id;
     private BigDecimal amount;
     private Integer count;
+    private String remark;
 }
