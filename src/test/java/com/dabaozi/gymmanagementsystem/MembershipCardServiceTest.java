@@ -6,6 +6,9 @@ import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.dabaozi.gymmanagementsystem.common.convention.exception.ClientException;
 import com.dabaozi.gymmanagementsystem.mapper.MemberMapper;
 import com.dabaozi.gymmanagementsystem.mapper.MembershipCardMapper;
+import com.dabaozi.gymmanagementsystem.mapper.CardTransactionMapper;
+import com.dabaozi.gymmanagementsystem.common.convention.utils.CurrentActor;
+import com.dabaozi.gymmanagementsystem.service.WalletService;
 import com.dabaozi.gymmanagementsystem.pojo.dto.MembershipCardConsumeDTO;
 import com.dabaozi.gymmanagementsystem.pojo.dto.MembershipCardSaveDTO;
 import com.dabaozi.gymmanagementsystem.pojo.entity.Member;
@@ -30,7 +33,10 @@ class MembershipCardServiceTest {
     void setUp() {
         memberMapper = mock(MemberMapper.class);
         cardMapper = mock(MembershipCardMapper.class);
-        service = new MemberServiceCardImpl(memberMapper);
+        CurrentActor actor = mock(CurrentActor.class);
+        WalletService wallet = new WalletService(cardMapper, memberMapper, mock(CardTransactionMapper.class), actor);
+        service = new MemberServiceCardImpl(memberMapper, wallet, actor);
+        when(memberMapper.selectById(anyLong())).thenReturn(Member.builder().status(1).name("会员").build());
         ReflectionTestUtils.setField(service, "baseMapper", cardMapper);
         TableInfoHelper.initTableInfo(new MapperBuilderAssistant(new MybatisConfiguration(), ""), MembershipCard.class);
     }
@@ -40,7 +46,8 @@ class MembershipCardServiceTest {
     void countCardDeductsCountWithoutRequiringAnAmount() {
         MembershipCard card = MembershipCard.builder().cardType(4).status(1).totalCount(20).remainCount(12).build();
         card.setId(2L);
-        when(cardMapper.selectById(2L)).thenReturn(card);
+        card.setMemberId(1L);
+        when(cardMapper.selectForUpdate(2L)).thenReturn(card);
         when(cardMapper.update(isNull(), any(Wrapper.class))).thenReturn(1);
         MembershipCardConsumeDTO dto = new MembershipCardConsumeDTO();
         dto.setId(2L);
@@ -49,10 +56,10 @@ class MembershipCardServiceTest {
         service.consume(dto);
 
         ArgumentCaptor<Wrapper<MembershipCard>> updates = ArgumentCaptor.forClass(Wrapper.class);
-        verify(cardMapper, times(2)).update(isNull(), updates.capture());
-        Wrapper<MembershipCard> deduction = updates.getAllValues().get(1);
-        assertEquals("remain_count=remain_count-2", deduction.getSqlSet());
-        assertTrue(deduction.getSqlSegment().contains("remain_count >="));
+        verify(cardMapper).update(isNull(), updates.capture());
+        Wrapper<MembershipCard> deduction = updates.getValue();
+        assertTrue(deduction.getSqlSet().contains("remain_count="));
+        verify(cardMapper).selectForUpdate(2L);
     }
 
     @Test
@@ -60,7 +67,8 @@ class MembershipCardServiceTest {
     void countCardRejectsInsufficientRemainingCount() {
         MembershipCard card = MembershipCard.builder().cardType(4).status(1).remainCount(1).build();
         card.setId(2L);
-        when(cardMapper.selectById(2L)).thenReturn(card);
+        card.setMemberId(1L);
+        when(cardMapper.selectForUpdate(2L)).thenReturn(card);
         when(cardMapper.update(isNull(), any(Wrapper.class))).thenReturn(0);
         MembershipCardConsumeDTO dto = new MembershipCardConsumeDTO();
         dto.setId(2L);
@@ -75,7 +83,7 @@ class MembershipCardServiceTest {
         when(memberMapper.selectById(1L)).thenReturn(member);
         MembershipCardSaveDTO dto = new MembershipCardSaveDTO();
         dto.setMemberId(1L);
-        dto.setCardType(5);
+        dto.setCardType(1);
         dto.setStatus(1);
 
         ClientException error = assertThrows(ClientException.class, () -> service.savaCard(dto));

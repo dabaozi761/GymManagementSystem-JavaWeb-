@@ -4,8 +4,13 @@ export const options = (labels: string[], start = 1): Option[] => labels.map((la
 const normal = [{ label: '正常', value: 1 }, { label: '已禁用', value: 0 }]
 const memberStatus = [{ label: '在籍', value: 1 }, { label: '已退会', value: 0 }]
 const courseStatus = [{ label: '开课中', value: 1 }, { label: '已停课', value: 0 }]
-const cardTypes = options(['月卡', '季卡', '年卡', '次卡', '储值卡'])
+const cardTypes = options(['月卡', '季卡', '年卡', '次卡'])
 const cardStatus = options(['正常', '已冻结', '已过期', '已注销'])
+export const productCategories = options(['储物柜', '充电宝', '饮料', '蛋白粉', '运动周边'])
+const transactionTypes = options(['充值', '余额消费', '次数核销'])
+const orderStatus = options(['购买完成', '租用中', '已归还'])
+const transactionColumns: Resource['columns'] = [{ key: 'transactionNo', label: '流水号' }, { key: 'memberName', label: '会员' }, { key: 'cardNo', label: '会员卡号' }, { key: 'type', label: '类型', options: transactionTypes }, { key: 'amount', label: '金额', type: 'money' }, { key: 'balanceBefore', label: '变动前余额', type: 'money' }, { key: 'balanceAfter', label: '变动后余额', type: 'money' }, { key: 'count', label: '核销次数' }, { key: 'remainCountBefore', label: '核销前次数' }, { key: 'remainCountAfter', label: '核销后次数' }, { key: 'createTime', label: '时间', type: 'datetime' }, { key: 'remark', label: '说明' }]
+const orderColumns: Resource['columns'] = [{ key: 'orderNo', label: '订单号' }, { key: 'memberName', label: '会员' }, { key: 'cardNo', label: '付款卡号' }, { key: 'productName', label: '商品' }, { key: 'category', label: '分类', options: productCategories }, { key: 'unitPrice', label: '单价', type: 'money' }, { key: 'quantity', label: '数量' }, { key: 'rentalDays', label: '租用天数' }, { key: 'amount', label: '总金额', type: 'money' }, { key: 'status', label: '订单状态', type: 'badge', options: orderStatus }, { key: 'createTime', label: '下单时间', type: 'datetime' }, { key: 'dueTime', label: '应归还时间', type: 'datetime' }, { key: 'returnTime', label: '归还时间', type: 'datetime' }]
 const equipmentTypes = options(['有氧器材', '力量器材', '自由重量', '其他'])
 const equipmentStatus = options(['可用', '维修中', '已报废'])
 const planStatus = options(['进行中', '已完成', '已取消'])
@@ -19,6 +24,24 @@ const relation = (key: string, label: string, resource: string, searchKey = 'nam
 const accountFields: Field[] = [{ key: 'username', label: '用户名', required: true, createOnly: true, maxLength: 50 }, { key: 'password', label: '密码', type: 'password', required: true, createOnly: true, maxLength: 72 }]
 
 export const resources: Record<string, Resource> = {
+  rechargeRecords: {
+    key: 'rechargeRecords', api: 'cardTransaction', title: '充值流水', singular: '充值流水', icon: 'card', subtitle: '查看会员卡的初始充值和后续充值记录。', readOnly: true, detail: true,
+    defaultFilters: { type: 1 }, filters: [{ key: 'cardId', label: '会员卡ID', type: 'number', min: 1 }, relation('memberId', '会员', 'member', 'name', 'name', false)], columns: transactionColumns, fields: [],
+  },
+  consumptionRecords: {
+    key: 'consumptionRecords', api: 'cardTransaction', title: '消费扣费记录', singular: '消费记录', icon: 'clipboard', subtitle: '查看余额扣费及次卡核销，购物租用会自动记账。', readOnly: true, detail: true,
+    defaultFilters: { type: 2 }, filters: [{ key: 'type', label: '消费类型', type: 'select', options: transactionTypes.filter(item => item.value !== 1) }, { key: 'cardId', label: '会员卡ID', type: 'number', min: 1 }, relation('memberId', '会员', 'member', 'name', 'name', false)], columns: transactionColumns, fields: [],
+  },
+  product: {
+    key: 'product', title: '商品管理', singular: '商品', icon: 'shop', subtitle: '管理商品与租用品，库存表示当前可购买或可租数量。', searchKey: 'name', searchPlaceholder: '搜索商品名称',
+    filters: [{ key: 'category', label: '分类', type: 'select', options: productCategories }, { key: 'status', label: '状态', type: 'select', options: [{ label: '上架', value: 1 }, { label: '下架', value: 0 }] }],
+    columns: [{ key: 'name', label: '商品名称', type: 'person' }, { key: 'category', label: '分类', options: productCategories }, { key: 'price', label: '单价（租用品每天）', type: 'money' }, { key: 'stock', label: '可售 / 可租库存' }, { key: 'status', label: '状态', type: 'badge', options: [{ label: '上架', value: 1 }, { label: '下架', value: 0 }] }, { key: 'remark', label: '说明' }],
+    fields: [{ key: 'name', label: '商品名称', required: true, maxLength: 100 }, { key: 'category', label: '分类', type: 'select', options: productCategories, default: 3, required: true, hint: '储物柜、充电宝按天租用；已建商品分类不能修改。' }, { key: 'price', label: '单价（元，租用品按天）', type: 'number', min: 0.01, max: 99999999.99, step: '0.01', required: true }, { key: 'stock', label: '可售 / 可租库存', type: 'number', min: 0, max: 1000000, default: 0, required: true }, { key: 'status', label: '状态', type: 'select', options: [{ label: '上架', value: 1 }, { label: '下架', value: 0 }], default: 1, required: true }, remark],
+  },
+  shopOrder: {
+    key: 'shopOrder', title: '购物与租用订单', singular: '订单', icon: 'shop', subtitle: '查看全部会员订单，物品实际归还后确认归还。', readOnly: true, detail: true,
+    filters: [relation('memberId', '会员', 'member', 'name', 'name', false), { key: 'category', label: '分类', type: 'select', options: productCategories }, statusField(orderStatus)], columns: orderColumns, fields: [],
+  },
   member: {
     key: 'member', title: '会员管理', singular: '会员', icon: 'users', subtitle: '每一份坚持，都值得被认真记录。', searchKey: 'name', searchPlaceholder: '搜索会员姓名', detail: true, statusAction: true, statuses: memberStatus,
     filters: [{ key: 'phone', label: '手机号', type: 'tel', placeholder: '联系电话' }, { key: 'memberId', label: '会员编号', placeholder: '会员编号' }, statusField(memberStatus)],
@@ -27,9 +50,9 @@ export const resources: Record<string, Resource> = {
   },
   membershipCard: {
     key: 'membershipCard', title: '会员卡管理', singular: '会员卡', icon: 'card', subtitle: '办卡、续费与消费，一处轻松管理。', searchKey: 'cardNo', searchPlaceholder: '搜索会员卡号', statuses: cardStatus, statusAction: true, defaultFilters: { status: 1 },
-    filters: [{ key: 'cardType', label: '卡类型', type: 'select', options: cardTypes }, { ...statusField(cardStatus), hint: '后端按单一状态查询，默认展示正常卡。' }],
+    filters: [{ key: 'cardType', label: '卡类型', type: 'select', options: cardTypes }, { ...statusField(cardStatus), hint: '默认展示正常卡，可切换其他状态。' }],
     columns: [{ key: 'cardNo', label: '会员卡号' }, { key: 'memberName', label: '所属会员', type: 'person' }, { key: 'cardType', label: '卡类型', options: cardTypes }, { key: 'balance', label: '余额', type: 'money' }, { key: 'remainCount', label: '剩余次数' }, { key: 'endDate', label: '到期日期', type: 'date' }, { key: 'status', label: '状态', type: 'badge', options: cardStatus }],
-    fields: [relation('memberId', '所属会员', 'member'), { key: 'cardType', label: '卡类型', type: 'select', options: cardTypes, required: true, default: 1 }, { key: 'startDate', label: '生效日期', type: 'date', required: true, visible: r => [1, 2, 3].includes(Number(r.cardType)) }, { key: 'endDate', label: '到期日期', type: 'date', required: true, visible: r => [1, 2, 3].includes(Number(r.cardType)) }, { key: 'totalCount', label: '总次数', type: 'number', min: 1, max: 100000, required: true, visible: r => Number(r.cardType) === 4 }, { key: 'remainCount', label: '剩余次数', type: 'number', min: 0, max: 100000, required: true, visible: r => Number(r.cardType) === 4 }, { key: 'balance', label: '初始余额（元）', type: 'number', min: 0, max: 99999999.99, step: '0.01', default: 0, required: true, visible: r => Number(r.cardType) === 5 }, { ...statusField(cardStatus), editOnly: true }],
+    fields: [relation('memberId', '所属会员', 'member'), { key: 'cardType', label: '卡类型', type: 'select', options: cardTypes, required: true, default: 1 }, { key: 'startDate', label: '生效日期', type: 'date', required: true, visible: r => [1, 2, 3].includes(Number(r.cardType)) }, { key: 'endDate', label: '到期日期', type: 'date', required: true, visible: r => [1, 2, 3].includes(Number(r.cardType)) }, { key: 'totalCount', label: '总次数', type: 'number', min: 1, max: 100000, required: true, visible: r => Number(r.cardType) === 4 }, { key: 'remainCount', label: '剩余次数', type: 'number', min: 0, max: 100000, required: true, visible: r => Number(r.cardType) === 4 }, { key: 'balance', label: '初始余额（元）', type: 'number', min: 0, max: 99999999.99, step: '0.01', default: 0, required: true, createOnly: true, hint: '四种会员卡均可使用余额，初始金额会记为充值流水。' }, { ...statusField(cardStatus), editOnly: true }],
   },
   course: {
     key: 'course', title: '课程管理', singular: '课程', icon: 'calendar', subtitle: '让每一次训练，都有合适的选择。', searchKey: 'name', searchPlaceholder: '搜索课程名称', detail: true, statuses: courseStatus, statusAction: true,
@@ -95,8 +118,14 @@ export const resources: Record<string, Resource> = {
   },
 }
 
+resources.memberCard = { ...resources.membershipCard!, key: 'memberCard', api: 'membershipCard', path: '/member/card', title: '我的会员卡', adminOnly: false, readOnly: true, statusAction: false, fields: [], detail: true }
+resources.memberRecharge = { ...resources.rechargeRecords!, key: 'memberRecharge', path: '/member/recharge', title: '我的充值记录', adminOnly: false }
+resources.memberConsumption = { ...resources.consumptionRecords!, key: 'memberConsumption', path: '/member/consumption', title: '我的消费记录', adminOnly: false }
+resources.memberOrders = { ...resources.shopOrder!, key: 'memberOrders', api: 'shopOrder', path: '/member/orders', title: '我的购物与租用', subtitle: '查看自己的购物、租用订单，归还请联系前台确认。', adminOnly: false }
+
 export const navigation = [
   { label: '工作空间', items: [{ key: 'dashboard', title: '运营概览', icon: 'layout' }] },
   { label: '日常运营', items: ['member', 'membershipCard', 'course', 'courseEnrollment', 'trainingPlan', 'trainingLog', 'equipment'].map(key => resources[key]!) },
   { label: '系统管理', items: ['user', 'admin'].map(key => resources[key]!) },
+  { label: '余额与商城', items: ['rechargeRecords', 'consumptionRecords', 'product', 'shopOrder'].map(key => resources[key]!) },
 ]

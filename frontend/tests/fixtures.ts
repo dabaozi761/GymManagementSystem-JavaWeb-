@@ -8,9 +8,22 @@ export function fixtures(): Record<string, TestRow[]> {
   const members = ['陈可', '李沐', '张晨', '王宁', '林悦', '赵一', '周妍', '许安', '吴桐', '宋青', '郑远', '温然', '何悦'].map((name, index) => ({ id: index + 1, userId: index + 8, memberId: `M202609${String(index + 1).padStart(4, '0')}`, name, phone: `1380013${String(index).padStart(4, '0')}`, gender: index % 2 + 1, joinDate: `2026-09-${String(29 - index).padStart(2, '0')}`, birthday: '1996-04-12', status: index === 11 ? 0 : 1, remark: index ? '' : '希望改善核心力量', createTime: '2026-09-29T09:15:00' }))
   return {
     member: members,
+    cardTransaction: [
+      { id: 1, transactionNo: 'TX1', memberId: 1, memberName: '陈可', cardId: 1, cardNo: 'C202609290001', type: 1, amount: 100, balanceBefore: 1180, balanceAfter: 1280, createTime: '2026-10-14T09:00:00', remark: '前台充值' },
+      { id: 2, transactionNo: 'TX2', memberId: 1, memberName: '陈可', cardId: 1, cardNo: 'C202609290001', type: 2, amount: 8, balanceBefore: 1288, balanceAfter: 1280, createTime: '2026-10-14T10:00:00', remark: '购买饮料' },
+      { id: 3, transactionNo: 'TX3', memberId: 2, memberName: '李沐', cardId: 2, cardNo: 'C202609290002', type: 3, amount: 0, count: 2, remainCountBefore: 14, remainCountAfter: 12, balanceBefore: 100, balanceAfter: 100, createTime: '2026-10-14T11:00:00' },
+    ],
+    product: [
+      { id: 1, name: '储物柜租用', category: 1, price: 5, stock: 30, status: 1, remark: '按天预付' },
+      { id: 2, name: '充电宝租用', category: 2, price: 3, stock: 10, status: 1 },
+      { id: 3, name: '运动饮料', category: 3, price: 8, stock: 50, status: 1 },
+      { id: 4, name: '乳清蛋白粉', category: 4, price: 199, stock: 20, status: 1 },
+      { id: 5, name: '运动毛巾', category: 5, price: 25, stock: 0, status: 1 },
+    ],
+    shopOrder: [{ id: 1, orderNo: 'SO1', memberId: 1, memberName: '陈可', cardId: 1, cardNo: 'C202609290001', productId: 1, productName: '储物柜租用', category: 1, quantity: 1, rentalDays: 3, unitPrice: 5, amount: 15, status: 2, dueTime: '2026-10-17T10:00:00', createTime: '2026-10-14T10:00:00' }],
     membershipCard: [
-      { id: 1, cardNo: 'C202609290001', memberId: 1, memberName: '陈可', cardType: 5, balance: 1280, status: 1 },
-      { id: 2, cardNo: 'C202609290002', memberId: 2, memberName: '李沐', cardType: 4, totalCount: 20, remainCount: 12, status: 1 },
+      { id: 1, cardNo: 'C202609290001', memberId: 1, memberName: '陈可', cardType: 1, balance: 1280, startDate: '2026-09-01', endDate: '2027-09-01', status: 1 },
+      { id: 2, cardNo: 'C202609290002', memberId: 2, memberName: '李沐', cardType: 4, balance: 100, totalCount: 20, remainCount: 12, status: 1 },
       { id: 3, cardNo: 'C202609290003', memberId: 3, memberName: '张晨', cardType: 3, startDate: '2026-09-01', endDate: '2027-09-01', status: 1 },
       { id: 4, cardNo: 'C202609290004', memberId: 4, memberName: '王宁', cardType: 1, startDate: '2026-08-01', endDate: '2026-09-01', status: 3 },
     ],
@@ -38,9 +51,11 @@ export async function mockApi(page: Page) {
     const success = (value: any = null) => route.fulfill({ json: { code: '0', data: value, message: null } })
     if (control.businessError && action !== 'page') return route.fulfill({ json: { code: 'A000001', message: control.businessError, data: null } })
     if (resource === 'login') return success(data.role === 1 ? adminSession : memberSession)
+    if (!(resource in db)) return route.fulfill({ status: 404 })
     if (action === 'page') {
       expect(method).toBe(['user', 'admin'].includes(resource) ? 'GET' : 'POST')
       let records = [...(db[resource] || [])]
+      if (request.headers().token === memberSession.token && ['cardTransaction', 'shopOrder', 'membershipCard'].includes(resource)) records = records.filter(row => row.memberId === 1)
       const params = { ...data }; if (resource === 'membershipCard' && params.status === undefined) params.status = 1
       for (const [key, value] of Object.entries(params)) {
         if (['current', 'size'].includes(key) || value === '' || value == null) continue
@@ -69,9 +84,22 @@ export async function mockApi(page: Page) {
     if (action === 'recharge' || action === 'consume') {
       const row = db[resource]!.find(row => row.id === Number(data.id))!
       if (action === 'recharge') row.balance += Number(data.amount)
-      else if (row.cardType === 4) row.remainCount -= Number(data.count)
+      else if (data.count != null) row.remainCount -= Number(data.count)
       else row.balance -= Number(data.amount)
       return success()
+    }
+    if (action === 'checkout') {
+      const product = db.product!.find(row => row.id === Number(data.productId))!
+      const card = db.membershipCard!.find(row => row.id === Number(data.cardId))!
+      const amount = product.price * data.quantity * (product.category <= 2 ? data.rentalDays : 1)
+      const order = { ...data, id: 100, orderNo: 'SONEW', productName: product.name, category: product.category, amount, status: product.category <= 2 ? 2 : 1, memberId: 1 }
+      card.balance -= amount; product.stock -= data.quantity; db.shopOrder!.unshift(order)
+      return success(order)
+    }
+    if (action === 'returnRental') {
+      expect(request.postData()).toBeNull()
+      const order = db.shopOrder!.find(row => row.id === Number(data.id))!
+      order.status = 3; return success()
     }
     if (action === 'enroll') { expect(data.memberId).toBeUndefined(); return success() }
     throw new Error(`Unexpected endpoint ${method} ${url.pathname}`)

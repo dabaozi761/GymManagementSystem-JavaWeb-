@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * 会员卡实体(月卡/季卡/年卡/次卡/储值卡统一一张表,按 cardType 区分使用哪组字段)
+ * 会员卡实体：月卡、季卡、年卡、次卡均使用卡上余额。
  */
 @Data
 @AllArgsConstructor

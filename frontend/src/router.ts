@@ -10,6 +10,7 @@ export const router = createRouter({
     { path: '/dashboard', component: () => import('./views/DashboardView.vue'), meta: { admin: true, title: '运营概览' } },
     ...Object.values(resources).map(resource => ({ path: resource.path || `/${resource.key}`, component: () => import('./views/ResourceView.vue'), props: { resourceKey: resource.key }, meta: { admin: resource.adminOnly ?? !['course', 'courseEnrollment'].includes(resource.key), title: resource.title } })),
     { path: '/profile', component: () => import('./views/ProfileView.vue'), meta: { title: '个人资料' } },
+    { path: '/shop', component: () => import('./views/ShopView.vue'), meta: { title: '健身商城' } },
     { path: '/:pathMatch(.*)*', component: () => import('./views/NotFoundView.vue'), meta: { title: '页面未找到' } },
   ],
   scrollBehavior: () => ({ top: 0 }),

@@ -42,6 +42,17 @@ public class TokenInterceptor implements HandlerInterceptor {
 //        6.角色校验:管理员模块接口(路径含 /admin/)要求 role=1,否则 403
         String uri = httpServletRequest.getRequestURI();
         String role = String.valueOf(claims.get("role"));
+        if (!"1".equals(role) && !"2".equals(role) && !"3".equals(role)) {
+            httpServletResponse.setStatus(403);
+            return false;
+        }
+        boolean cardWrite = uri.contains("/membershipCard/") && !uri.endsWith("/page") && !uri.endsWith("/detail");
+        boolean productWrite = uri.contains("/product/") && !uri.endsWith("/page");
+        boolean rentalReturn = uri.contains("/shopOrder/") && uri.endsWith("/returnRental");
+        if ((cardWrite || productWrite || rentalReturn || uri.contains("/member/")) && !"1".equals(role)) {
+            httpServletResponse.setStatus(403);
+            return false;
+        }
         if (uri.contains("/admin/")) {
             if (!"1".equals(role)) {
                 log.info("非管理员访问管理端接口，返回 403");

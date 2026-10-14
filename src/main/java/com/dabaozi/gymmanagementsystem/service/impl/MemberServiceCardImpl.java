@@ -1,6 +1,5 @@
 package com.dabaozi.gymmanagementsystem.service.impl;
 
-import ch.qos.logback.core.net.server.Client;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -17,11 +16,11 @@ import com.dabaozi.gymmanagementsystem.pojo.entity.Member;
 import com.dabaozi.gymmanagementsystem.pojo.entity.MembershipCard;
 import com.dabaozi.gymmanagementsystem.pojo.vo.MembershipCardPageRespVO;
 import com.dabaozi.gymmanagementsystem.pojo.vo.MembershipCardVO;
-import com.dabaozi.gymmanagementsystem.service.MemberService;
+import com.dabaozi.gymmanagementsystem.service.WalletService;
+import com.dabaozi.gymmanagementsystem.common.convention.utils.CurrentActor;
 import com.dabaozi.gymmanagementsystem.service.MembershipCardService;
 //import jdk.javadoc.internal.doclets.toolkit.builders.MemberSummaryBuilder;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,13 +41,16 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
     private static final int QUARTER_CARD = 2;
     private static final int YEAR_CARD = 3;
     private static final int COUNT_CARD = 4;
-//    private static final int STORED_VALUE_CARD = 5;
     private static final int NORMAL_STATUS = 1;
 
     private final MemberMapper memberMapper;
+    private final WalletService walletService;
+    private final CurrentActor actor;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String savaCard(MembershipCardSaveDTO membershipCardSaveDTO) {
+        actor.requireAdmin();
         Member member = requireMember(membershipCardSaveDTO.getMemberId());
         if (!Integer.valueOf(1).equals(member.getStatus())) {
             throw new ClientException("退会会员不能办理会员卡");
@@ -62,37 +64,61 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
         normalizeAndValidate(membershipCard);
         //baseMapper是ServiceImpl中的对象
         baseMapper.insert(membershipCard);
+        walletService.recordOpeningBalance(membershipCard);
         return membershipCard.getCardNo();
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateCard(MembershipCardUpdateDTO dto) {
+        actor.requireAdmin();
         if (dto.getId() == null) {
             throw new ClientException("会员卡id不能为空");
         }
-        requireCard(dto.getId());
+        MembershipCard existing = baseMapper.selectForUpdate(dto.getId());
+        if (existing == null) throw new ClientException("会员卡不存在或已删除");
+        if (!java.util.Objects.equals(existing.getMemberId(), dto.getMemberId())) {
+            throw new ClientException("会员卡所属会员不能修改，请另行办卡");
+        }
         requireMember(dto.getMemberId());
+        if (dto.getBalance() != null && dto.getBalance().compareTo(existing.getBalance() == null ? BigDecimal.ZERO : existing.getBalance()) != 0) {
+            throw new ClientException("请通过充值或扣费操作调整余额");
+        }
         MembershipCard card = MembershipCard.builder()
                 .status(dto.getStatus() == null ? NORMAL_STATUS : dto.getStatus())
                 .build();
         BeanUtils.copyProperties(dto, card);
+        card.setBalance(existing.getBalance());
         normalizeAndValidate(card);
-        LambdaUpdateWrapper wrapper = Wrappers.lambdaUpdate(MembershipCard.class)
+        card.setBalance(null); // 编辑资料不写余额，避免绕过流水。
+        LambdaUpdateWrapper<MembershipCard> wrapper = Wrappers.lambdaUpdate(MembershipCard.class)
                 .eq(MembershipCard::getId, dto.getId());
+        if (isTimeCard(card.getCardType())) {
+            wrapper.set(MembershipCard::getTotalCount, null).set(MembershipCard::getRemainCount, null);
+        } else {
+            wrapper.set(MembershipCard::getStartDate, null).set(MembershipCard::getEndDate, null);
+        }
         //因为前面card已经赋值过了，所以要带上card :et
         baseMapper.update(card, wrapper);
 
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteCard(Long id) {
-        if (id == null || baseMapper.deleteById(id) == 0) {
+        actor.requireAdmin();
+        if (id == null) throw new ClientException("会员卡ID不能为空");
+        MembershipCard card = baseMapper.selectForUpdate(id);
+        if (card == null) throw new ClientException("会员卡不存在或已删除");
+        if (card.getBalance() != null && card.getBalance().signum() > 0) throw new ClientException("有余额的会员卡不能删除");
+        if (baseMapper.deleteById(id) == 0) {
             throw new ClientException("会员卡不存在或已删除");
         }
     }
 
     @Override
     public void updateCardStatus(Long id, Integer status) {
+        actor.requireAdmin();
         if (status == null || status < 1 || status > 4) {
             throw new ClientException("会员卡状态只能是1至4");
         }
@@ -111,75 +137,22 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void recharge(MembershipCardRechargeDTO dto) {
-        if (dto == null || dto.getId() == null) {
-            throw new ClientException("会员卡id不能为空");
-        }
-        //判断充值的余额>0
-        requirePositive(dto.getAmount(), "充值余额");
-        MembershipCard card = requireUsableCard(dto.getId());//确保这个会员卡不过期
-//        if (!Integer.valueOf(STORED_VALUE_CARD).equals(card.getCardType())) {
-//            throw new ClientException("只有储值卡支持充值");
-//        }
-        //给全部卡都可以使用
-        int rows = baseMapper.update(null, Wrappers.lambdaUpdate(MembershipCard.class)
-                .eq(MembershipCard::getId, dto.getId())
-                .eq(MembershipCard::getStatus,NORMAL_STATUS)
-                .setSql("balance=COALESCE(balance,0)+"+dto.getAmount().toPlainString()));
-        if(rows==0){
-            throw new ClientException("充值失败，会员卡状态已变化");
-        }
-
-
+        if (dto == null) throw new ClientException("充值参数不能为空");
+        walletService.recharge(dto.getId(), dto.getAmount(), dto.getRemark());
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void consume(MembershipCardConsumeDTO dto) {
-        if(dto==null ||dto.getId()==null){
-            throw new ClientException("会员卡id不能为空");
-        }
-        MembershipCard card=requireUsableCard(dto.getId());
-        int rows=0;//判断有无更新
-//        全部会员卡都可以使用
-            requirePositive(dto.getAmount(),"消费金额");
-            rows=baseMapper.update(null, Wrappers.lambdaUpdate(MembershipCard.class)
-                    .eq(MembershipCard::getId, dto.getId())
-                    .eq(MembershipCard::getStatus,NORMAL_STATUS)
-                    .ge(MembershipCard::getBalance,dto.getAmount())
-                    .setSql("balance=COALESCE(balance,0)-"+dto.getAmount().toPlainString()));
-            if(rows==0){
-                throw new ClientException("会员卡余额不足");
-            }
-
-
-        else if(Integer.valueOf(COUNT_CARD).equals(card.getCardType())){
-
-            if(dto.getCount()==null||dto.getCount()<=0){
-                throw new ClientException("消费次数必须>0");
-            }
-            rows=baseMapper.update(null,Wrappers.lambdaUpdate(MembershipCard.class)
-                    .eq(MembershipCard::getId,dto.getId())
-                    .eq(MembershipCard::getStatus,NORMAL_STATUS)
-                    .ge(MembershipCard::getRemainCount,dto.getCount())
-                    .setSql("remain_count=remain_count-"+dto.getCount()));
-            if(rows==0){
-                throw new ClientException("会员卡剩余次数不够");
-            }
-        }
-        else{
-            throw new ClientException("月卡、季卡、年卡无需扣减余额或次数");
-
-        }
-
-
+        if (dto == null) throw new ClientException("消费参数不能为空");
+        walletService.consume(dto.getId(), dto.getAmount(), dto.getCount(), dto.getRemark());
     }
 
     @Override
     public MembershipCardVO getCard(Long id) {
         //检验这个卡是否有效，是不是正常状态
-        MembershipCard card= requireUsableCard(id);
+        MembershipCard card= requireCard(id);
+        actor.requireOwner(card.getMemberId());
         //根据会员id查询会员
         Member member=memberMapper.selectById(card.getMemberId());
         //将MembershipCard的值复制粘贴到vo
@@ -202,11 +175,13 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
             dto=new MembershipCardPageReqDTO();//空指针保护
         }
 
+        if (dto.getCurrent() < 1 || dto.getSize() < 1 || dto.getSize() > 100) throw new ClientException("分页参数不合法");
+        dto.setMemberId(actor.scopedMemberId(dto.getMemberId()));
         LambdaQueryWrapper<MembershipCard> wrapper=Wrappers.lambdaQuery(MembershipCard.class)
                 .like(dto.getCardNo()!=null,MembershipCard::getCardNo,dto.getCardNo())
                 .eq(dto.getMemberId()!=null,MembershipCard::getMemberId,dto.getMemberId())
                 .eq(dto.getCardType()!=null,MembershipCard::getCardType,dto.getCardType())
-                .eq(MembershipCard::getStatus, dto.getStatus() == null ? 1 : dto.getStatus())
+                .eq(dto.getStatus() != null, MembershipCard::getStatus, dto.getStatus())
                 .orderByDesc(MembershipCard::getCreateTime);
         //wrapper查询条件
         //当前页数
@@ -235,15 +210,6 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
 
     }
 
-
-    private MembershipCard requireUsableCard(Long id) {
-        refreshExpiredCards();
-        MembershipCard card = requireCard(id);
-        if (!Integer.valueOf(NORMAL_STATUS).equals(card.getStatus())) {
-            throw new ClientException("会员卡不是正常状态，无法操作");
-        }
-        return card;
-    }
 
     /**
      * 根据memberid检验会员是否存在
@@ -275,8 +241,11 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
 
     private void normalizeAndValidate(MembershipCard card) {
         Integer type = card.getCardType();
+        if (card.getBalance() == null) card.setBalance(BigDecimal.ZERO);
+        WalletService.validateMoney(card.getBalance(), true);
+        if (card.getStatus() == null) card.setStatus(NORMAL_STATUS);
         if (type == null || type < MONTH_CARD || type > COUNT_CARD) {
-            throw new ClientException("会员卡类型只能是1至5");
+            throw new ClientException("会员卡类型只能是1至4");
         }
         if (card.getStatus() == null || card.getStatus() < 1 || card.getStatus() > 4) {
             throw new ClientException("会员卡状态只能是1至4");
@@ -289,7 +258,6 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
             if (card.getEndDate().isBefore(card.getStartDate())) {
                 throw new ClientException("有效期结束日期不能早于开始日期");
             }
-            card.setBalance(null);
             card.setTotalCount(null);
             card.setRemainCount(null);
         } else if (Integer.valueOf(COUNT_CARD).equals(type)) {
@@ -302,20 +270,9 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
             if (card.getRemainCount() < 0 || card.getRemainCount() > card.getTotalCount()) {
                 throw new ClientException("次卡剩余次数必须在0到总次数之间");
             }
-            card.setBalance(null);
             card.setStartDate(null);
             card.setEndDate(null);
-        } else {
-            if (card.getBalance() == null) {
-                card.setBalance(BigDecimal.ZERO);
-            }
-            if (card.getBalance().compareTo(BigDecimal.ZERO) < 0) {
-                throw new ClientException("储值卡余额不能小于0");
-            }
-            card.setTotalCount(null);
-            card.setRemainCount(null);
-            card.setStartDate(null);
-            card.setEndDate(null);
+
         }
     }
 
@@ -332,7 +289,7 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
     }
 
     /**
-     * 自动批量把过期的时间卡（月 / 季 / 年卡）改成【已过期状态 3】,这行只是顺手把数据库里所有过期时间卡刷新状态，不影响储值卡业务
+     * 自动把已过期的月卡、季卡、年卡标记为状态3。
      */
     private void refreshExpiredCards() {
         baseMapper.update(null, Wrappers.lambdaUpdate(MembershipCard.class)
@@ -340,12 +297,6 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
                 .eq(MembershipCard::getStatus, NORMAL_STATUS)
                 .lt(MembershipCard::getEndDate, LocalDate.now())
                 .set(MembershipCard::getStatus, 3));
-    }
-
-    private void requirePositive(BigDecimal value, String fieldName) {
-        if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ClientException(fieldName + "必须大于0");
-        }
     }
 
     /**

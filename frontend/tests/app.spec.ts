@@ -129,15 +129,15 @@ test('card forms switch types and validate dates and remaining count', async ({ 
   await page.getByRole('button', { name: '保存信息' }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
   const payload = api.requests.find(item => item.resource === 'membershipCard' && item.action === 'save')!.data
-  expect(payload).toEqual({ memberId: 1, cardType: 4, totalCount: 10, remainCount: 10, status: 1 })
+  expect(payload).toEqual({ memberId: 1, cardType: 4, totalCount: 10, remainCount: 10, balance: 0, status: 1 })
 })
 
 test('card recharge and count consumption use separate payloads', async ({ page }) => {
   const api = await mockApi(page); await login(page); await page.goto('/membershipCard')
   const stored = page.getByRole('row').filter({ hasText: 'C202609290001' })
-  await stored.locator('summary').click(); await stored.getByRole('button', { name: '储值充值' }).click()
+  await stored.locator('summary').click(); await stored.getByRole('button', { name: '余额充值' }).click()
   await page.getByLabel('充值金额（元）').fill('50')
-  await page.getByRole('button', { name: '确认储值卡充值' }).click()
+  await page.getByRole('button', { name: '确认会员卡充值' }).click()
   await expect(stored).toContainText('1,330.00')
   const counted = page.getByRole('row').filter({ hasText: 'C202609290002' })
   await counted.locator('summary').click(); await counted.getByRole('button', { name: '次卡核销' }).click()
