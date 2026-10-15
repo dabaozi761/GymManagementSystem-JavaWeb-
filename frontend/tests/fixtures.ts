@@ -51,6 +51,7 @@ export async function mockApi(page: Page) {
     const success = (value: any = null) => route.fulfill({ json: { code: '0', data: value, message: null } })
     if (control.businessError && action !== 'page') return route.fulfill({ json: { code: 'A000001', message: control.businessError, data: null } })
     if (resource === 'login') return success(data.role === 1 ? adminSession : memberSession)
+    if (resource === 'account' && action === 'changePassword') { expect(method).toBe('POST'); return success() }
     if (!(resource in db)) return route.fulfill({ status: 404 })
     if (action === 'page') {
       expect(method).toBe(['user', 'admin'].includes(resource) ? 'GET' : 'POST')
