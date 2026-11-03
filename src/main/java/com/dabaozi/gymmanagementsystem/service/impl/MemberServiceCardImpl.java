@@ -242,7 +242,7 @@ public class MemberServiceCardImpl extends ServiceImpl<MembershipCardMapper, Mem
     private void normalizeAndValidate(MembershipCard card) {
         Integer type = card.getCardType();
         if (card.getBalance() == null) card.setBalance(BigDecimal.ZERO);
-        WalletService.validateMoney(card.getBalance(), true);
+        walletService.validateMoney(card.getBalance(), true);
         if (card.getStatus() == null) card.setStatus(NORMAL_STATUS);
         if (type == null || type < MONTH_CARD || type > COUNT_CARD) {
             throw new ClientException("会员卡类型只能是1至4");

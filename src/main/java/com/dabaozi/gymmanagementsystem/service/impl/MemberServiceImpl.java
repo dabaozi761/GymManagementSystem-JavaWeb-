@@ -101,6 +101,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
         LambdaUpdateWrapper<Member> wrapper = Wrappers.lambdaUpdate(Member.class)
                 .eq(Member::getId, id)
                 .set(Member::getStatus, status);
+        //TODO
         if (baseMapper.update(null, wrapper) == 0) {
             throw new ClientException("会员不存在或已删除");
         }

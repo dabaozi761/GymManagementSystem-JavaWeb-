@@ -9,6 +9,7 @@ import com.dabaozi.gymmanagementsystem.mapper.MembershipCardMapper;
 import com.dabaozi.gymmanagementsystem.mapper.CardTransactionMapper;
 import com.dabaozi.gymmanagementsystem.common.convention.utils.CurrentActor;
 import com.dabaozi.gymmanagementsystem.service.WalletService;
+import com.dabaozi.gymmanagementsystem.service.impl.WalletServiceImpl;
 import com.dabaozi.gymmanagementsystem.pojo.dto.MembershipCardConsumeDTO;
 import com.dabaozi.gymmanagementsystem.pojo.dto.MembershipCardSaveDTO;
 import com.dabaozi.gymmanagementsystem.pojo.entity.Member;
@@ -34,7 +35,7 @@ class MembershipCardServiceTest {
         memberMapper = mock(MemberMapper.class);
         cardMapper = mock(MembershipCardMapper.class);
         CurrentActor actor = mock(CurrentActor.class);
-        WalletService wallet = new WalletService(cardMapper, memberMapper, mock(CardTransactionMapper.class), actor);
+        WalletService wallet = new WalletServiceImpl(cardMapper, memberMapper, mock(CardTransactionMapper.class), actor);
         service = new MemberServiceCardImpl(memberMapper, wallet, actor);
         when(memberMapper.selectById(anyLong())).thenReturn(Member.builder().status(1).name("会员").build());
         ReflectionTestUtils.setField(service, "baseMapper", cardMapper);
